@@ -20,27 +20,31 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK 36 components
+      - name: Install Android SDK 36 & accept licenses
         run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platform-tools" "build-tools;36.0.0" "platforms;android-36.1" || sdkmanager "platform-tools" "build-tools;36.0.0" "platforms;android-36"
+          SDKMANAGER="$(command -v sdkmanager || find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)"
+          echo "Using sdkmanager: $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1" || \
+            ("$SDKMANAGER" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" && \
+             ("$SDKMANAGER" --channel=1 --install "platforms;android-36.1" || true))
+          ls -la "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
 
       - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
+          cache-disabled: true
 
       - name: Decode debug keystore
         run: |
           if [ -f debug.keystore.base64 ]; then
             base64 -d debug.keystore.base64 > debug.keystore
+            ls -la debug.keystore
           fi
 
       - name: Build Debug APK
-        run: gradle :app:assembleDebug --no-daemon --no-configuration-cache --console=plain --stacktrace
+        run: gradle :app:assembleDebug --no-daemon --no-configuration-cache --no-build-cache --console=plain --stacktrace
 
       - name: Package APK and ZIP
         run: |
