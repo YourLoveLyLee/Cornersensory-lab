@@ -1,0 +1,6 @@
+{
+  "name": "CornerSense Lab",
+  "description": "Hardware sensor diagnostics lab investigating physical corner tap detection and classification using smartphone motion sensors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
