@@ -22,13 +22,18 @@ jobs:
 
       - name: Install Android SDK 36 & accept licenses
         run: |
-          SDKMANAGER="$(command -v sdkmanager || find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)"
+          SDK_DIR="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
+          SDKMANAGER="$(command -v sdkmanager || find "$SDK_DIR/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)"
           echo "Using sdkmanager: $SDKMANAGER"
           yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
-          "$SDKMANAGER" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1" || \
-            ("$SDKMANAGER" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" && \
-             ("$SDKMANAGER" --channel=1 --install "platforms;android-36.1" || true))
-          ls -la "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
+          echo "Available android-36 packages:"
+          "$SDKMANAGER" --list --channel=0 | grep -E "android-36|build-tools;36" || true
+          "$SDKMANAGER" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36"
+          "$SDKMANAGER" --install "platforms;android-36.1" || "$SDKMANAGER" --channel=1 --install "platforms;android-36.1" || true
+          echo "Installed platforms:"
+          ls -la "$SDK_DIR/platforms" "$SDK_DIR/build-tools"
 
       - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
@@ -44,7 +49,26 @@ jobs:
           fi
 
       - name: Build Debug APK
-        run: gradle :app:assembleDebug --no-daemon --no-configuration-cache --no-build-cache --console=plain --stacktrace
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --no-daemon --no-configuration-cache --no-build-cache --console=plain 2>&1 | tee gradle-build.log
+
+      - name: Report Build Error Details
+        if: failure()
+        run: |
+          if [ -f gradle-build.log ]; then
+            echo "### Gradle Failure Summary" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 60 gradle-build.log | tee -a "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            ERR_MSG=$(grep -A 5 "What went wrong:" gradle-build.log | tr '\n' ' ' | sed 's/%/%25/g; s/\r//g')
+            if [ -n "$ERR_MSG" ]; then
+              echo "::error::$ERR_MSG"
+            else
+              LAST_ERR=$(tail -n 12 gradle-build.log | tr '\n' ' ')
+              echo "::error::$LAST_ERR"
+            fi
+          fi
 
       - name: Package APK and ZIP
         run: |
