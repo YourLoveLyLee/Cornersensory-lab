@@ -20,11 +20,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Accept Android SDK licenses
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 36 components
         run: |
-          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
-            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
-          fi
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platform-tools" "build-tools;36.0.0" "platforms;android-36.1" || sdkmanager "platform-tools" "build-tools;36.0.0" "platforms;android-36"
 
       - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
@@ -38,7 +40,7 @@ jobs:
           fi
 
       - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: gradle :app:assembleDebug --no-daemon --no-configuration-cache --console=plain --stacktrace
 
       - name: Package APK and ZIP
         run: |

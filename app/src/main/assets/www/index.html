@@ -59,6 +59,8 @@
                 <input type="checkbox" id="phantomDebugToggle" />
                 <span>Debug</span>
               </label>
+              <span class="sep">·</span>
+              <button type="button" class="link-subtle" id="openDownloadBuildBtn">Download Build</button>
             </div>
           </div>
 
@@ -396,6 +398,7 @@
           <div class="export-actions">
             <button type="button" class="btn btn-outline btn-sm" id="exportJsonBtn">EXPORT JSON</button>
             <button type="button" class="btn btn-outline btn-sm" id="exportCsvBtn">EXPORT CSV</button>
+            <button type="button" class="btn btn-gold btn-sm" id="openDownloadBuildBtn2">DOWNLOAD BUILD</button>
           </div>
           <div class="mono small-meta" id="exportFeedback"></div>
           <div id="historyList" class="history-list"></div>
@@ -420,6 +423,38 @@
         <span class="nav-label">ANALYZE</span>
       </button>
     </nav>
+  </div>
+
+  <!-- Minimalist Download Build Modal -->
+  <div class="modal-backdrop hidden" id="downloadBuildModal" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="downloadModalTitle">DOWNLOAD BUILD</div>
+          <div class="small-meta mono">CornerSense Lab · Android APK</div>
+        </div>
+        <button type="button" class="modal-close" id="closeDownloadModalBtn" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mock-badge mono">MOCK DISTRIBUTION LINK</div>
+        <div class="mock-link-box">
+          <a href="https://releases.cornersense.example/builds/CornerSense-Lab-v1.0-debug.apk"
+             id="mockApkDownloadLink"
+             class="mock-link mono"
+             download="CornerSense-Lab.apk">
+            https://releases.cornersense.example/builds/CornerSense-Lab-v1.0-debug.apk
+          </a>
+        </div>
+        <div class="modal-meta mono" id="downloadModalStatus">
+          Package: com.aistudio.cornersense.labr7q · Target: Realme C51 (Android)
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-gold btn-sm" id="copyMockLinkBtn">COPY LINK</button>
+          <button type="button" class="btn btn-outline btn-sm" id="dismissDownloadModalBtn">CLOSE</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/sensor-engine.js"></script>

@@ -163,6 +163,37 @@
       $("phantomDebugPanel").classList.toggle("hidden", !state.phantomDebug);
     });
 
+    // Download Build Modal
+    const openDownloadModal = () => {
+      $("downloadModalStatus").textContent =
+        "Package: com.aistudio.cornersense.labr7q · Target: Realme C51 (Android)";
+      $("downloadBuildModal").classList.remove("hidden");
+    };
+    const closeDownloadModal = () => {
+      $("downloadBuildModal").classList.add("hidden");
+    };
+    $("openDownloadBuildBtn").addEventListener("click", openDownloadModal);
+    $("openDownloadBuildBtn2").addEventListener("click", openDownloadModal);
+    $("closeDownloadModalBtn").addEventListener("click", closeDownloadModal);
+    $("dismissDownloadModalBtn").addEventListener("click", closeDownloadModal);
+    $("downloadBuildModal").addEventListener("click", (e) => {
+      if (e.target === $("downloadBuildModal")) closeDownloadModal();
+    });
+    $("mockApkDownloadLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      $("downloadModalStatus").textContent =
+        "Mock preview URL — use GitHub Actions / Releases or AI Studio APK export for the real binary.";
+    });
+    $("copyMockLinkBtn").addEventListener("click", async () => {
+      const url = $("mockApkDownloadLink").getAttribute("href");
+      try {
+        await navigator.clipboard.writeText(url);
+        $("downloadModalStatus").textContent = "Mock APK link copied to clipboard.";
+      } catch (_) {
+        $("downloadModalStatus").textContent = "Link: " + url;
+      }
+    });
+
     $("phantomGoTrainBtn").addEventListener("click", () => switchTab("experiment"));
 
     $("phantomStage").addEventListener("pointerdown", (e) => {
